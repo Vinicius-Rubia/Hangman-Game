@@ -1,7 +1,7 @@
 export type GameStatus = "playing" | "won" | "lost";
 
 export type Player = {
-  id: number;
+  id: string;
   name: string;
   score: number;
 };
