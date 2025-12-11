@@ -75,7 +75,7 @@ export function TVPage() {
           <h1 className="text-4xl font-bold">Entre no Jogo!</h1>
           <div className="bg-white p-4 rounded-xl">
             <QRCodeSVG
-              value={`https://5wp3vtmp-5173.brs.devtunnels.ms/play?room=${roomId}`}
+              value={`${window.location.origin}/play?room=${roomId}`}
               size={256}
             />
           </div>
