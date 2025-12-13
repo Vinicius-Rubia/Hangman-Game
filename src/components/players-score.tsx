@@ -15,7 +15,7 @@ export function PlayersScore({ players, turnIndex }: PlayersScoreProps) {
           key={p.id}
           className={`transition-all duration-300 border-2 ${
             turnIndex === index
-              ? "border-blue-500 shadow-lg scale-105 bg-blue-50"
+              ? "border-yellow-400 shadow-lg scale-105"
               : "border-transparent"
           }`}
         >
