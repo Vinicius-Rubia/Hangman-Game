@@ -172,7 +172,7 @@ export function MobilePage() {
   };
 
   const handleSubmitKick = async () => {
-    const cleanKick = sanitizeInput(kickInput);
+    const cleanKick = sanitizeInput(kickInput).trim();
     const correctWord = gameState.gameData.word;
 
     if (!cleanKick) return;
@@ -248,7 +248,7 @@ export function MobilePage() {
   const submitSetup = async () => {
     if (!setupWord.trim() || !setupHint.trim()) return;
 
-    const cleanWord = sanitizeInput(setupWord);
+    const cleanWord = sanitizeInput(setupWord).trim();
     const masked = cleanWord.split("").map((l) => (l === " " ? " " : "_"));
 
     // Validação extra antes de enviar
