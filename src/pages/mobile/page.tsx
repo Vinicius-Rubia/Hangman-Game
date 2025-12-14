@@ -234,10 +234,6 @@ export function MobilePage() {
         const currentIndex = guessers.findIndex((p) => p.id === user.uid);
         const nextIndex = (currentIndex + 1) % guessers.length;
         updates["gameData.turnPlayerId"] = guessers[nextIndex].id;
-        toast.error("Errou! Perdeu 1 Troféu Global e na Sala e passou a vez.");
-      } else {
-        // Se NÃO era minha vez -> Só perde pontos, vez continua com quem estava
-        toast.error("Errou! Perdeu 1 Troféu Global e na Sala.");
       }
 
       await updateDoc(doc(db, "rooms", roomId!), updates);
@@ -257,19 +253,25 @@ export function MobilePage() {
       return;
     }
 
-    const guessers = players.filter((p) => p.id !== user.uid);
-    const firstPlayer = guessers.length > 0 ? guessers[0].id : null;
+    const sortedPlayers = [...players].sort((a, b) =>
+      a.name.localeCompare(b.name)
+    );
+
+    const hostIndex = sortedPlayers.findIndex((p) => p.id === user.uid);
+
+    const firstPlayerIndex = (hostIndex + 1) % sortedPlayers.length;
+    const firstPlayerId = sortedPlayers[firstPlayerIndex].id;
 
     await updateDoc(doc(db, "rooms", roomId!), {
       "gameData.word": cleanWord,
       "gameData.hint": setupHint,
       "gameData.maskedWord": masked,
       "gameData.phase": "PLAYING",
-      "gameData.turnPlayerId": firstPlayer,
+      "gameData.turnPlayerId": firstPlayerId,
       "gameData.usedLetters": [],
       "gameData.mistakes": 0,
       "gameData.nextRoundHostId": null,
-      "gameData.winnerId": null, // Resetar vencedor
+      "gameData.winnerId": null,
       "gameData.isGuessing": false,
       "gameData.guesserId": null,
     });
@@ -314,16 +316,31 @@ export function MobilePage() {
           },
           { merge: true }
         );
-      } else {
-        toast.success("Boa! Acertou a letra.");
       }
     } else {
       updates["gameData.mistakes"] = increment(1);
-      toast.error("Errou a letra!");
+
       if (gameState.gameData.mistakes + 1 >= 6) {
         updates["gameData.phase"] = "FINISHED";
         updates["gameData.winnerId"] = null; // Ninguém ganhou
         roundEnded = true;
+
+        const hostId = gameState.gameData.roundHostId;
+        if (hostId) {
+          // Atualiza Global
+          await setDoc(
+            doc(db, "users", hostId),
+            { stats: { wins: increment(1) } },
+            { merge: true }
+          );
+          // Atualiza Sala
+          await setDoc(
+            doc(db, "rooms", roomId!, "players", hostId),
+            { wins: increment(1) },
+            { merge: true }
+          );
+          toast.info("Fim de jogo! Ponto para o Líder.");
+        }
       }
     }
 
